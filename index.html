@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>声光衍射实验 - 交互式数据拟合工具</title>
+    <!-- 引入 Chart.js 绘图库 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #3498db;
+            --bg: #f4f7f6;
+            --panel-bg: #ffffff;
+            --text: #333;
+            --border: #ddd;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        /* 控制面板左侧 */
+        .sidebar {
+            flex: 1;
+            min-width: 350px;
+            background: var(--panel-bg);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        /* 图表及结果右侧 */
+        .main-content {
+            flex: 2;
+            min-width: 500px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .chart-container {
+            background: var(--panel-bg);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            position: relative;
+            height: 500px;
+        }
+        .result-panel {
+            background: var(--panel-bg);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        h2, h3 { margin-top: 0; font-size: 1.1rem; border-bottom: 2px solid var(--primary); padding-bottom: 5px; color: #2c3e50;}
+        .control-group { margin-bottom: 15px; }
+        label { font-weight: bold; font-size: 0.9rem; margin-bottom: 5px; display: inline-block;}
+        input[type="number"], input[type="color"], select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        input[type="color"] { padding: 0; height: 35px; cursor: pointer;}
+        .row-inputs { display: flex; gap: 10px; }
+        .row-inputs > div { flex: 1; }
+        
+        /* 数据表格 */
+        table { width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 0.9rem;}
+        th, td { border: 1px solid var(--border); padding: 5px; text-align: center;}
+        th { background: #f8f9fa; }
+        input[type="number"] { width: 100%; text-align: center; border: none; background: transparent; }
+        input[type="number"]:focus { outline: 1px solid var(--primary); background: #fff;}
+        .btn { padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; color: #fff; font-weight: bold; margin-right: 5px;}
+        .btn-add { background: #2ecc71; }
+        .btn-del { background: #e74c3c; padding: 4px 8px; font-size: 0.8rem;}
+        .checkbox-group label { margin-right: 15px; cursor: pointer; font-weight: normal;}
+        .result-item { background: #eef2f5; padding: 10px; border-radius: 5px; font-size: 1rem; display: flex; justify-content: space-between;}
+        .highlight { font-weight: bold; color: #e74c3c; }
+    </style>
+</head>
+<body>
+
+    <!-- 左侧控制面板 -->
+    <div class="sidebar">
+        <h2>数据录入</h2>
+        <div style="font-size: 0.85rem; color: #666; margin-bottom: 10px;">
+            修改下方表格的数据，图表与结果将自动实时更新。
+        </div>
+        <table id="dataTable">
+            <thead>
+                <tr>
+                    <th>序号</th>
+                    <th>L (mm)</th>
+                    <th>Δx₁ (mm)</th>
+                    <th>Δx₂ (mm)</th>
+                    <th>Δx₃ (mm)</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- 默认几行空数据，用户可自行填写 -->
+                <tr>
+                    <td>1</td>
+                    <td><input type="number" step="any" class="input-L"></td>
+                    <td><input type="number" step="any" class="input-x1"></td>
+                    <td><input type="number" step="any" class="input-x2"></td>
+                    <td><input type="number" step="any" class="input-x3"></td>
+                    <td><button class="btn btn-del" onclick="deleteRow(this)">删</button></td>
+                </tr>
+            </tbody>
+        </table>
+        <button class="btn btn-add" onclick="addRow()">+ 添加一行</button>
+
+        <h2 style="margin-top: 30px;">参数与绘图设置</h2>
+        <div class="control-group checkbox-group">
+            <label>选择绘制的数据：</label><br>
+            <label><input type="checkbox" id="showX1" checked> Δx₁</label>
+            <label><input type="checkbox" id="showX2" checked> Δx₂</label>
+            <label><input type="checkbox" id="showX3" checked> Δx₃</label>
+        </div>
+        
+        <div class="row-inputs">
+            <div class="control-group">
+                <label>激光波长 λ (nm)</label>
+                <input type="number" id="lambdaInput" value="650" step="1">
+            </div>
+            <div class="control-group">
+                <label>超声频率 v (MHz)</label>
+                <input type="number" id="freqInput" value="11.125" step="any" placeholder="用于计算声速">
+            </div>
+        </div>
+
+        <div class="row-inputs">
+            <div class="control-group">
+                <label>X轴最小值</label>
+                <input type="number" id="xMin" placeholder="自适应">
+            </div>
+            <div class="control-group">
+                <label>X轴最大值</label>
+                <input type="number" id="xMax" placeholder="自适应">
+            </div>
+        </div>
+        <div class="row-inputs">
+            <div class="control-group">
+                <label>Y轴最小值</label>
+                <input type="number" id="yMin" placeholder="自适应">
+            </div>
+            <div class="control-group">
+                <label>Y轴最大值</label>
+                <input type="number" id="yMax" placeholder="自适应">
+            </div>
+        </div>
+
+        <div class="row-inputs">
+            <div class="control-group">
+                <label>点形状样式</label>
+                <select id="pointStyle">
+                    <option value="circle">圆形 (Circle)</option>
+                    <option value="rect">方形 (Rect)</option>
+                    <option value="triangle">三角形 (Triangle)</option>
+                    <option value="crossRot">十字形 (Cross)</option>
+                    <option value="star">星形 (Star)</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>背景主题</label>
+                <select id="bgTheme">
+                    <option value="#ffffff">白色背景</option>
+                    <option value="#f0f4f8">浅蓝灰色</option>
+                    <option value="#222222">深色背景</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="row-inputs">
+            <div class="control-group">
+                <label>X1 颜色</label>
+                <input type="color" id="colorX1" value="#3498db">
+            </div>
+            <div class="control-group">
+                <label>X2 颜色</label>
+                <input type="color" id="colorX2" value="#e74c3c">
+            </div>
+            <div class="control-group">
+                <label>X3 颜色</label>
+                <input type="color" id="colorX3" value="#2ecc71">
+            </div>
+        </div>
+    </div>
+
+    <!-- 右侧图表与结果 -->
+    <div class="main-content">
+        <div class="chart-container">
+            <canvas id="fitChart"></canvas>
+        </div>
+
+        <div class="result-panel">
+            <div>
+                <h3>Δx₁ 拟合结果</h3>
+                <div class="result-item">斜率 m: <span id="m1" class="highlight">-</span></div>
+                <div class="result-item">截距 b: <span id="b1" class="highlight">-</span></div>
+                <div class="result-item">R²: <span id="r1" class="highlight">-</span></div>
+                <div class="result-item">反推声速 u: <span id="u1" class="highlight">-</span> m/s</div>
+            </div>
+            <div>
+                <h3>Δx₂ 拟合结果</h3>
+                <div class="result-item">斜率 m: <span id="m2" class="highlight">-</span></div>
+                <div class="result-item">截距 b: <span id="b2" class="highlight">-</span></div>
+                <div class="result-item">R²: <span id="r2" class="highlight">-</span></div>
+                <div class="result-item">反推声速 u: <span id="u2" class="highlight">-</span> m/s</div>
+            </div>
+            <div>
+                <h3>Δx₃ 拟合结果</h3>
+                <div class="result-item">斜率 m: <span id="m3" class="highlight">-</span></div>
+                <div class="result-item">截距 b: <span id="b3" class="highlight">-</span></div>
+                <div class="result-item">R²: <span id="r3" class="highlight">-</span></div>
+                <div class="result-item">反推声速 u: <span id="u3" class="highlight">-</span> m/s</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let chartInstance = null;
+
+        // --- 初始化表格行 ---
+        function addRow() {
+            const tbody = document.querySelector('#dataTable tbody');
+            const rowCount = tbody.rows.length + 1;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${rowCount}</td>
+                <td><input type="number" step="any" class="input-L"></td>
+                <td><input type="number" step="any" class="input-x1"></td>
+                <td><input type="number" step="any" class="input-x2"></td>
+                <td><input type="number" step="any" class="input-x3"></td>
+                <td><button class="btn btn-del" onclick="deleteRow(this)">删</button></td>
+            `;
+            tbody.appendChild(tr);
+            attachListenersToRow(tr);
+            updateChart();
+        }
+
+        function deleteRow(btn) {
+            const tr = btn.closest('tr');
+            tr.remove();
+            updateRowNumbers();
+            updateChart();
+        }
+
+        function updateRowNumbers() {
+            const tbody = document.querySelector('#dataTable tbody');
+            Array.from(tbody.rows).forEach((row, index) => {
+                row.cells[0].innerText = index + 1;
+            });
+        }
+
+        function attachListenersToRow(tr) {
+            const inputs = tr.querySelectorAll('input');
+            inputs.forEach(input => {
+                input.addEventListener('input', updateChart);
+            });
+        }
+
+        // 为第一行绑定事件
+        attachListenersToRow(document.querySelector('#dataTable tbody tr'));
+
+        // --- 核心算法：最小二乘法 ---
+        function linearRegression(x, y) {
+            const n = x.length;
+            if (n < 2) return null;
+            let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0, sumY2 = 0;
+            for (let i = 0; i < n; i++) {
+                sumX += x[i]; sumY += y[i];
+                sumXY += x[i] * y[i];
+                sumX2 += x[i] * x[i]; sumY2 += y[i] * y[i];
+            }
+            const denominator = (n * sumX2 - sumX * sumX);
+            if (denominator === 0) return null; // 避免除以0
+
+            const m = (n * sumXY - sumX * sumY) / denominator;
+            const b = (sumY - m * sumX) / n;
+            const rNum = (n * sumXY - sumX * sumY) ** 2;
+            const rDen = (n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY);
+            const rSquared = rDen === 0 ? 0 : rNum / rDen;
+            return { m, b, rSquared };
+        }
+
+        // --- 计算并更新结果面板 ---
+        function updateResultPanel() {
+            const lambda = parseFloat(document.getElementById('lambdaInput').value) * 1e-6; // nm转mm
+            const freq = parseFloat(document.getElementById('freqInput').value); // MHz
+
+            // 遍历 x1, x2, x3
+            for (let k = 1; k <= 3; k++) {
+                const xData = [], yData = [];
+                document.querySelectorAll(`#dataTable tbody .input-L`).forEach((inputL, i) => {
+                    const L = parseFloat(inputL.value);
+                    const dx = parseFloat(document.querySelectorAll(`#dataTable tbody .input-x${k}`)[i].value);
+                    if (!isNaN(L) && !isNaN(dx)) {
+                        xData.push(L);
+                        yData.push(dx);
+                    }
+                });
+
+                const res = linearRegression(xData, yData);
+                if (res) {
+                    document.getElementById(`m${k}`).innerText = res.m.toFixed(5);
+                    document.getElementById(`b${k}`).innerText = res.b.toFixed(4);
+                    document.getElementById(`r${k}`).innerText = res.rSquared.toFixed(4);
+                    
+                    // 公式：dx_k = (2*k*lambda / lambda_s) * L
+                    // m = 2*k*lambda / lambda_s => lambda_s = 2*k*lambda / m
+                    // 注意单位：lambda 已经是 mm
+                    const lambda_s = (2 * k * lambda) / res.m; 
+                    // 声速 u = lambda_s(mm) * freq(MHz) * 1000 (单位转换)
+                    if (!isNaN(freq) && freq > 0) {
+                        const u = lambda_s * freq * 1000; 
+                        document.getElementById(`u${k}`).innerText = u.toFixed(2);
+                    } else {
+                        document.getElementById(`u${k}`).innerText = "请输入频率";
+                    }
+                } else {
+                    document.getElementById(`m${k}`).innerText = "-";
+                    document.getElementById(`b${k}`).innerText = "-";
+                    document.getElementById(`r${k}`).innerText = "-";
+                    document.getElementById(`u${k}`).innerText = "-";
+                }
+            }
+        }
+
+        // --- 更新图表 ---
+        function updateChart() {
+            // 1. 收集数据
+            const datasets = [];
+            const isX1Checked = document.getElementById('showX1').checked;
+            const isX2Checked = document.getElementById('showX2').checked;
+            const isX3Checked = document.getElementById('showX3').checked;
+            
+            const colors = {
+                x1: document.getElementById('colorX1').value,
+                x2: document.getElementById('colorX2').value,
+                x3: document.getElementById('colorX3').value
+            };
+
+            // 解析表格数据
+            const rawData = { x1: [], x2: [], x3: [] };
+            document.querySelectorAll('#dataTable tbody tr').forEach(row => {
+                const L = parseFloat(row.querySelector('.input-L').value);
+                const x1 = parseFloat(row.querySelector('.input-x1').value);
+                const x2 = parseFloat(row.querySelector('.input-x2').value);
+                const x3 = parseFloat(row.querySelector('.input-x3').value);
+                if (!isNaN(L)) {
+                    if (!isNaN(x1)) rawData.x1.push({x: L, y: x1});
+                    if (!isNaN(x2)) rawData.x2.push({x: L, y: x2});
+                    if (!isNaN(x3)) rawData.x3.push({x: L, y: x3});
+                }
+            });
+
+            // 2. 准备数据集与拟合线
+            const drawDataset = (data, color, label, show) => {
+                if (!show || data.length < 2) return;
+                
+                // 散点
+                datasets.push({
+                    label: label + ' 数据点',
+                    data: data,
+                    backgroundColor: color,
+                    borderColor: color,
+                    borderWidth: 2,
+                    pointRadius: 6,
+                    pointHoverRadius: 9,
+                    pointStyle: document.getElementById('pointStyle').value,
+                    type: 'scatter'
+                });
+
+                // 拟合线
+                const res = linearRegression(data.map(d=>d.x), data.map(d=>d.y));
+                if (res) {
+                    const minX = Math.min(...data.map(d=>d.x));
+                    const maxX = Math.max(...data.map(d=>d.x));
+                    datasets.push({
+                        label: label + ' 拟合线',
+                        data: [
+                            { x: minX, y: res.m * minX + res.b },
+                            { x: maxX, y: res.m * maxX + res.b }
+                        ],
+                        type: 'line',
+                        borderColor: color,
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        pointRadius: 0,
+                        fill: false
+                    });
+                }
+            };
+
+            drawDataset(rawData.x1, colors.x1, 'Δx₁', isX1Checked);
+            drawDataset(rawData.x2, colors.x2, 'Δx₂', isX2Checked);
+            drawDataset(rawData.x3, colors.x3, 'Δx₃', isX3Checked);
+
+            // 3. 坐标轴与样式设置
+            const bgColor = document.getElementById('bgTheme').value;
+            const isDark = bgColor === '#222222';
+            const textColor = isDark ? '#ffffff' : '#333333';
+            const gridColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
+
+            let xMinVal = document.getElementById('xMin').value;
+            let xMaxVal = document.getElementById('xMax').value;
+            let yMinVal = document.getElementById('yMin').value;
+            let yMaxVal = document.getElementById('yMax').value;
+
+            // 4. 渲染图表
+            const ctx = document.getElementById('fitChart').getContext('2d');
+            
+            const config = {
+                type: 'scatter',
+                data: { datasets: datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: { duration: 0 }, // 关闭动画以实现实时丝滑响应
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '光斑间距 Δx 随距离 L 变化关系图',
+                            color: textColor,
+                            font: { size: 16 }
+                        },
+                        legend: {
+                            labels: { color: textColor }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: '距离 L (mm)', color: textColor },
+                            grid: { color: gridColor },
+                            ticks: { color: textColor },
+                            min: xMinVal !== "" ? parseFloat(xMinVal) : undefined,
+                            max: xMaxVal !== "" ? parseFloat(xMaxVal) : undefined
+                        },
+                        y: {
+                            title: { display: true, text: '光斑间距 Δx (mm)', color: textColor },
+                            grid: { color: gridColor },
+                            ticks: { color: textColor },
+                            min: yMinVal !== "" ? parseFloat(yMinVal) : undefined,
+                            max: yMaxVal !== "" ? parseFloat(yMaxVal) : undefined
+                        }
+                    }
+                }
+            };
+
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+            
+            // 修改画布背景
+            document.querySelector('.chart-container').style.backgroundColor = bgColor;
+            // 传入配置
+            chartInstance = new Chart(ctx, config);
+
+            // 同步更新右侧计算结果面板
+            updateResultPanel();
+        }
+
+        // --- 全局事件监听 ---
+        // 监听所有控制面板内的输入和更改
+        document.querySelectorAll('.sidebar input, .sidebar select').forEach(el => {
+            el.addEventListener('input', updateChart);
+            el.addEventListener('change', updateChart);
+        });
+
+        // 页面加载完毕后初始化一次（触发默认的坐标轴自适应）
+        window.onload = () => {
+            updateChart();
+        };
+
+    </script>
+</body>
+</html>
