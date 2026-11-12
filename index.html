@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>声光衍射实验 - 交互式数据拟合与分析工具 (Draggable)</title>
+    <title>声光衍射实验 - 交互式数据拟合与分析工具</title>
     <!-- 引入 Chart.js 绘图库 -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -35,7 +35,7 @@
             padding: 16px;
             display: flex;
             flex-direction: column;
-            overflow: hidden; /* 防止页面整体出现滚动条，由内部面板接管 */
+            overflow: hidden;
         }
 
         header {
@@ -55,7 +55,7 @@
         .app-layout {
             display: flex;
             flex: 1;
-            min-height: 0; /* 核心：允许子元素收缩 */
+            min-height: 0; 
             width: 100%;
         }
 
@@ -82,7 +82,7 @@
         .panel-body {
             padding: 16px;
             flex: 1;
-            overflow-y: auto; /* 内部滚动 */
+            overflow-y: auto;
         }
 
         /* --- 拖拽条通用样式 --- */
@@ -110,7 +110,7 @@
             background-color: var(--resizer-hover);
         }
 
-        /* 垂直拖拽条（调整左右宽度） */
+        /* 垂直拖拽条 */
         .resizer-v {
             width: 10px;
             cursor: col-resize;
@@ -120,7 +120,7 @@
         }
         .resizer-v::after { width: 4px; height: 30px; }
 
-        /* 水平拖拽条（调整上下高度） */
+        /* 水平拖拽条 */
         .resizer-h {
             height: 12px;
             cursor: row-resize;
@@ -132,7 +132,7 @@
 
         /* --- 左侧侧边栏 --- */
         .sidebar {
-            width: 380px; /* 初始宽度 */
+            width: 380px; 
             min-width: 300px;
             max-width: 600px;
             display: flex;
@@ -141,7 +141,6 @@
             flex-shrink: 0;
         }
         
-        /* 侧边栏分两块，允许内部滚动 */
         .sidebar .panel { flex: 1; min-height: 0;}
 
         /* --- 右侧主区域 --- */
@@ -149,12 +148,12 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            min-width: 0; /* 核心 */
+            min-width: 0;
         }
 
         /* 图表区 */
         .chart-panel {
-            height: 55%; /* 初始高度 */
+            height: 55%;
             min-height: 250px;
             position: relative;
         }
@@ -173,13 +172,11 @@
             min-height: 200px;
         }
 
-        /* 底部左侧（结果） */
         .results-panel {
             width: 50%;
             min-width: 350px;
         }
 
-        /* 底部右侧（原理） */
         .theory-panel {
             flex: 1;
             min-width: 300px;
@@ -201,9 +198,10 @@
 
         th { background-color: #f8fafc; }
 
+        /* 调整了输入框的边距，适应带有小数点的长数字 */
         input[type="number"] {
             width: 100%;
-            padding: 6px;
+            padding: 6px 2px;
             border: 1px solid transparent;
             border-radius: 4px;
             text-align: center;
@@ -214,6 +212,16 @@
             outline: none;
             border-color: var(--primary);
             background-color: var(--primary-light);
+        }
+
+        /* 隐藏 number 类型的上下小箭头，让界面更整洁 */
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
         }
 
         .btn {
@@ -293,7 +301,6 @@
         }
         .formula span { font-style: italic; }
 
-        /* 拖拽时防止文本选中 */
         .no-select {
             user-select: none;
             pointer-events: none;
@@ -306,10 +313,8 @@
         <h1>声光衍射实验数据拟合与分析系统</h1>
     </header>
 
-    <!-- 主容器 -->
     <div class="app-layout" id="appLayout">
         
-        <!-- 左侧面板 -->
         <aside class="sidebar" id="sidebarPanel">
             <div class="panel">
                 <div class="panel-header">实验数据录入</div>
@@ -318,10 +323,10 @@
                         <thead>
                             <tr>
                                 <th width="30">序号</th>
-                                <th>L(mm)</th>
-                                <th>Δx₁</th>
-                                <th>Δx₂</th>
-                                <th>Δx₃</th>
+                                <th>L (mm)</th>
+                                <th>Δx₁ (mm)</th>
+                                <th>Δx₂ (mm)</th>
+                                <th>Δx₃ (mm)</th>
                                 <th width="40">操作</th>
                             </tr>
                         </thead>
@@ -397,39 +402,29 @@
             </div>
         </aside>
 
-        <!-- 拖拽条 1 (左右) -->
         <div class="resizer resizer-v" id="resizerLeft"></div>
 
-        <!-- 右侧主区 -->
         <main class="main-area">
-            
-            <!-- 顶部图表 -->
             <div class="panel chart-panel" id="chartPanel">
                 <div class="chart-container">
                     <canvas id="fitChart"></canvas>
                 </div>
             </div>
 
-            <!-- 拖拽条 2 (上下) -->
             <div class="resizer resizer-h" id="resizerMid"></div>
 
-            <!-- 底部信息区 -->
             <div class="bottom-panels" id="bottomPanels">
-                
-                <!-- 结果面板 -->
                 <div class="panel results-panel" id="resultsPanel">
                     <div class="panel-header">最小二乘法线性拟合结果</div>
                     <div class="panel-body">
                         <div class="results-grid" id="resultsGrid">
-                            <!-- 通过 JS 动态生成结构，保证代码整洁 -->
+                            <!-- 通过 JS 动态生成结构 -->
                         </div>
                     </div>
                 </div>
 
-                <!-- 拖拽条 3 (底部左右) -->
                 <div class="resizer resizer-v" id="resizerBottom"></div>
 
-                <!-- 原理面板 -->
                 <div class="panel theory-panel" id="theoryPanel">
                     <div class="panel-header">模拟原理与公式验证推导</div>
                     <div class="panel-body theory-content">
@@ -455,7 +450,7 @@
 
     <script>
         // ==========================================
-        // 拖拽功能逻辑 (Resizer)
+        // 拖拽功能逻辑
         // ==========================================
         let isDragging = false;
         let currentResizer = null;
@@ -472,7 +467,6 @@
         const resultsPanel = document.getElementById('resultsPanel');
         const theoryPanel = document.getElementById('theoryPanel');
 
-        // 绑定事件
         [resizerLeft, resizerMid, resizerBottom].forEach(resizer => {
             resizer.addEventListener('mousedown', initDrag);
         });
@@ -493,7 +487,6 @@
                 startWidth = resultsPanel.offsetWidth;
             }
 
-            // 添加全局遮罩防止鼠标丢失，并且禁用文本选中
             document.body.classList.add('no-select');
             document.addEventListener('mousemove', onDrag);
             document.addEventListener('mouseup', stopDrag);
@@ -503,32 +496,23 @@
             if (!isDragging) return;
 
             if (currentResizer === resizerLeft) {
-                // 调整左侧宽度
                 const dx = e.clientX - startX;
                 let newWidth = startWidth + dx;
-                // 限制范围 (300px - 600px)
                 newWidth = Math.max(300, Math.min(600, newWidth));
                 sidebarPanel.style.width = `${newWidth}px`;
-                
             } else if (currentResizer === resizerMid) {
-                // 调整图表高度
                 const dy = e.clientY - startY;
                 let newHeight = startHeight + dy;
-                // 限制最小高度
-                const maxHeight = bottomPanels.offsetTop - chartPanel.offsetTop - 12; // 12是resizer高度
+                const maxHeight = bottomPanels.offsetTop - chartPanel.offsetTop - 12;
                 newHeight = Math.max(200, Math.min(maxHeight - 150, newHeight));
                 chartPanel.style.height = `${newHeight}px`;
-                
             } else if (currentResizer === resizerBottom) {
-                // 调整底部左右宽度
                 const dx = e.clientX - startX;
                 let newWidth = startWidth + dx;
-                // 限制范围
                 newWidth = Math.max(350, Math.min(newWidth, theoryPanel.offsetWidth + startWidth - 300));
                 resultsPanel.style.width = `${newWidth}px`;
             }
             
-            // 拖拽时动态通知 Chart.js 重绘 (虽然 Chart.js 内部有 ResizeObserver，手动强制一下更平滑)
             if (chartInstance) {
                 chartInstance.resize();
             }
@@ -545,12 +529,11 @@
 
 
         // ==========================================
-        // 核心数据与图表逻辑 (与原版一致)
+        // 核心数据与图表逻辑 
         // ==========================================
         let chartInstance = null;
         const chartFont = { family: '"Times New Roman", "SimSun", serif', size: 14 };
 
-        // 动态生成结果结构
         function initResultsUI() {
             const grid = document.getElementById('resultsGrid');
             let html = '';
@@ -576,24 +559,55 @@
             for (let i = 0; i < 3; i++) { addRow(); }
         }
 
+        // 数据录入表格生成
         function addRow() {
             const tbody = document.querySelector('#dataTable tbody');
             const rowCount = tbody.rows.length + 1;
             const tr = document.createElement('tr');
+            // 修改：为 L 添加 step="0.1"，为 dx 添加 step="0.001"，并增加 placeholder 提示
             tr.innerHTML = `
                 <td>${rowCount}</td>
-                <td><input type="number" step="any" class="input-L"></td>
-                <td><input type="number" step="any" class="input-x1"></td>
-                <td><input type="number" step="any" class="input-x2"></td>
-                <td><input type="number" step="any" class="input-x3"></td>
+                <td><input type="number" step="0.1" class="input-L" placeholder="如 600.0"></td>
+                <td><input type="number" step="0.001" class="input-x1" placeholder="如 7.341"></td>
+                <td><input type="number" step="0.001" class="input-x2" placeholder="如 15.079"></td>
+                <td><input type="number" step="0.001" class="input-x3" placeholder="如 22.024"></td>
                 <td><button class="btn btn-del" onclick="deleteRow(this)">×</button></td>
             `;
             tbody.appendChild(tr);
-            tr.querySelectorAll('input').forEach(input => {
-                input.addEventListener('input', updateChart);
-            });
+            
+            // 绑定事件（包含实时输入、失去焦点格式化）
+            attachListenersToRow(tr);
             updateRowNumbers();
             updateChart();
+        }
+
+        function attachListenersToRow(tr) {
+            const inputL = tr.querySelector('.input-L');
+            const inputX1 = tr.querySelector('.input-x1');
+            const inputX2 = tr.querySelector('.input-x2');
+            const inputX3 = tr.querySelector('.input-x3');
+
+            // 1. 实时更新图表
+            [inputL, inputX1, inputX2, inputX3].forEach(input => {
+                input.addEventListener('input', updateChart);
+            });
+
+            // 2. 失去焦点时，格式化小数位数
+            inputL.addEventListener('blur', function() {
+                if (this.value !== '' && !isNaN(parseFloat(this.value))) {
+                    this.value = parseFloat(this.value).toFixed(1); // L保留1位
+                    updateChart();
+                }
+            });
+
+            [inputX1, inputX2, inputX3].forEach(input => {
+                input.addEventListener('blur', function() {
+                    if (this.value !== '' && !isNaN(parseFloat(this.value))) {
+                        this.value = parseFloat(this.value).toFixed(3); // dx保留3位
+                        updateChart();
+                    }
+                });
+            });
         }
 
         function deleteRow(btn) {
@@ -781,13 +795,11 @@
             updateResultPanel();
         }
 
-        // 监听所有设置项
         document.querySelectorAll('.sidebar input, .sidebar select').forEach(el => {
             el.addEventListener('input', updateChart);
             el.addEventListener('change', updateChart);
         });
 
-        // 初始化
         window.onload = () => {
             initResultsUI();
             initTable();
