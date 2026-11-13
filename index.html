@@ -51,7 +51,7 @@
             letter-spacing: 2px;
         }
 
-        /* --- 主布局（使用 Flex 配合拖拽条） --- */
+        /* --- 主布局 --- */
         .app-layout {
             display: flex;
             flex: 1;
@@ -85,7 +85,7 @@
             overflow-y: auto;
         }
 
-        /* --- 拖拽条通用样式 --- */
+        /* --- 拖拽条 --- */
         .resizer {
             background-color: transparent;
             position: relative;
@@ -93,11 +93,7 @@
             transition: background-color 0.2s;
             flex-shrink: 0;
         }
-
-        .resizer:hover, .resizer.active {
-            background-color: rgba(59, 130, 246, 0.2);
-        }
-
+        .resizer:hover, .resizer.active { background-color: rgba(59, 130, 246, 0.2); }
         .resizer::after {
             content: '';
             position: absolute;
@@ -105,42 +101,23 @@
             border-radius: 4px;
             transition: background-color 0.2s;
         }
+        .resizer:hover::after, .resizer.active::after { background-color: var(--resizer-hover); }
 
-        .resizer:hover::after, .resizer.active::after {
-            background-color: var(--resizer-hover);
-        }
-
-        /* 垂直拖拽条 */
-        .resizer-v {
-            width: 10px;
-            cursor: col-resize;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+        .resizer-v { width: 10px; cursor: col-resize; display: flex; justify-content: center; align-items: center; }
         .resizer-v::after { width: 4px; height: 30px; }
-
-        /* 水平拖拽条 */
-        .resizer-h {
-            height: 12px;
-            cursor: row-resize;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+        .resizer-h { height: 12px; cursor: row-resize; display: flex; justify-content: center; align-items: center; }
         .resizer-h::after { width: 30px; height: 4px; }
 
         /* --- 左侧侧边栏 --- */
         .sidebar {
-            width: 380px; 
-            min-width: 300px;
-            max-width: 600px;
+            width: 440px; 
+            min-width: 340px;
+            max-width: 650px;
             display: flex;
             flex-direction: column;
             gap: 16px;
             flex-shrink: 0;
         }
-        
         .sidebar .panel { flex: 1; min-height: 0;}
 
         /* --- 右侧主区域 --- */
@@ -151,61 +128,42 @@
             min-width: 0;
         }
 
-        /* 图表区 */
         .chart-panel {
             height: 55%;
             min-height: 250px;
             position: relative;
         }
-        
-        .chart-container {
-            width: 100%;
-            height: 100%;
-            position: relative;
-            padding: 10px;
-        }
+        .chart-container { width: 100%; height: 100%; position: relative; padding: 10px; }
 
-        /* 底部区域 */
-        .bottom-panels {
-            flex: 1;
-            display: flex;
-            min-height: 200px;
-        }
-
-        .results-panel {
-            width: 50%;
-            min-width: 350px;
-        }
-
-        .theory-panel {
-            flex: 1;
-            min-width: 300px;
-        }
+        .bottom-panels { flex: 1; display: flex; min-height: 200px; }
+        .results-panel { width: 50%; min-width: 350px; }
+        .theory-panel { flex: 1; min-width: 300px; }
 
         /* --- 表单控件样式 --- */
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             margin-bottom: 12px;
+            table-layout: fixed; 
         }
 
         th, td {
-            padding: 6px 4px;
+            padding: 6px 2px;
             text-align: center;
             border: 1px solid var(--border-color);
+            white-space: nowrap;
         }
 
         th { background-color: #f8fafc; }
 
-        /* 调整了输入框的边距，适应带有小数点的长数字 */
         input[type="number"] {
             width: 100%;
-            padding: 6px 2px;
+            padding: 6px 0px;
             border: 1px solid transparent;
             border-radius: 4px;
             text-align: center;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
         }
 
         input[type="number"]:focus {
@@ -214,25 +172,15 @@
             background-color: var(--primary-light);
         }
 
-        /* 隐藏 number 类型的上下小箭头，让界面更整洁 */
+        /* 隐藏 number 上下箭头 */
         input[type="number"]::-webkit-outer-spin-button,
-        input[type="number"]::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-        input[type="number"] {
-            -moz-appearance: textfield;
-        }
+        input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type="number"] { -moz-appearance: textfield; }
 
         .btn {
-            padding: 8px 12px;
-            border: 1px solid transparent;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.2s;
+            padding: 8px 12px; border: 1px solid transparent; border-radius: 4px;
+            cursor: pointer; font-weight: bold; transition: all 0.2s;
         }
-
         .btn-add { background: #fff; color: var(--primary); border-color: var(--primary); width: 100%; }
         .btn-add:hover { background: var(--primary-light); }
         .btn-del { background: #fef2f2; color: var(--danger); border-color: #fca5a5; padding: 4px 8px; }
@@ -242,11 +190,8 @@
         .form-group label { display: block; font-size: 0.9rem; color: var(--text-muted); margin-bottom: 4px; }
         
         select, input[type="color"] {
-            width: 100%;
-            padding: 6px;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            background: #fff;
+            width: 100%; padding: 6px; border: 1px solid var(--border-color);
+            border-radius: 4px; background: #fff;
         }
         input[type="color"] { height: 36px; padding: 2px; cursor: pointer;}
 
@@ -256,43 +201,61 @@
         }
         .checkbox-group label { display: flex; align-items: center; gap: 4px; cursor: pointer; }
 
+        /* 平均频率显示条 */
+        .avg-freq-bar {
+            background: #e0f2fe;
+            border: 1px solid #7dd3fc;
+            color: #0369a1;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 16px;
+            text-align: center;
+            font-size: 0.95rem;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+        .avg-freq-bar span {
+            font-size: 1.2rem;
+            color: #b91c1c;
+        }
+
         /* --- 结果数据网格 --- */
         .results-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 12px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
         }
 
         .result-box {
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            padding: 10px;
-            background: #f8fafc;
+            border: 1px solid var(--border-color); border-radius: 6px;
+            padding: 16px; background: #f8fafc;
         }
 
         .result-box h4 {
-            color: var(--primary);
-            text-align: center;
-            border-bottom: 1px dashed var(--border-color);
-            padding-bottom: 6px;
-            margin-bottom: 8px;
+            color: var(--primary); text-align: center;
+            border-bottom: 1px dashed var(--border-color); 
+            padding-bottom: 8px; margin-bottom: 12px;
+            font-size: 1.25rem; 
         }
 
         .result-item {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.9rem;
-            margin-bottom: 6px;
+            display: flex; justify-content: space-between; 
+            font-size: 1.15rem; 
+            margin-bottom: 8px;
         }
-
         .result-item span:last-child { font-weight: bold; }
-        .highlight-speed { color: var(--danger) !important; font-size: 1.1rem; }
-
-        /* --- 理论推导样式 --- */
-        .theory-content {
-            font-size: 0.95rem;
-            line-height: 1.6;
+        
+        .highlight-speed { 
+            color: var(--danger) !important; 
+            font-size: 1.5rem; 
+            vertical-align: middle;
         }
+
+        /* --- 理论推导 --- */
+        .theory-content { font-size: 0.95rem; line-height: 1.6; }
         .theory-content p { margin-bottom: 8px; text-indent: 2em; }
         .theory-content p.no-indent { text-indent: 0; font-weight: bold; margin-top: 12px; }
         .formula {
@@ -301,10 +264,7 @@
         }
         .formula span { font-style: italic; }
 
-        .no-select {
-            user-select: none;
-            pointer-events: none;
-        }
+        .no-select { user-select: none; pointer-events: none; }
     </style>
 </head>
 <body>
@@ -322,12 +282,13 @@
                     <table id="dataTable">
                         <thead>
                             <tr>
-                                <th width="30">序号</th>
-                                <th>L (mm)</th>
-                                <th>Δx₁ (mm)</th>
-                                <th>Δx₂ (mm)</th>
-                                <th>Δx₃ (mm)</th>
-                                <th width="40">操作</th>
+                                <th width="8%">序号</th>
+                                <th width="17%">L (mm)</th>
+                                <th width="17%">v (MHz)</th>
+                                <th width="17%">Δx₁ (mm)</th>
+                                <th width="17%">Δx₂ (mm)</th>
+                                <th width="17%">Δx₃ (mm)</th>
+                                <th width="7%">操作</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -341,6 +302,11 @@
             <div class="panel">
                 <div class="panel-header">参数与外观设置</div>
                 <div class="panel-body">
+                    <!-- 平均频率动态展示 -->
+                    <div class="avg-freq-bar">
+                        参与计算的系统平均频率：<span id="avgFreqDisplay">-</span> MHz
+                    </div>
+
                     <div class="checkbox-group">
                         <label><input type="checkbox" id="showX1" checked> Δx₁</label>
                         <label><input type="checkbox" id="showX2" checked> Δx₂</label>
@@ -350,10 +316,6 @@
                         <div class="form-group">
                             <label>激光波长 λ (nm)</label>
                             <input type="number" id="lambdaInput" value="650" step="1">
-                        </div>
-                        <div class="form-group">
-                            <label>超声频率 v (MHz)</label>
-                            <input type="number" id="freqInput" value="11.125" step="any">
                         </div>
                     </div>
                     <div class="form-row">
@@ -415,7 +377,7 @@
 
             <div class="bottom-panels" id="bottomPanels">
                 <div class="panel results-panel" id="resultsPanel">
-                    <div class="panel-header">最小二乘法线性拟合结果</div>
+                    <div class="panel-header" style="font-size: 1.25rem;">最小二乘法线性拟合结果</div>
                     <div class="panel-body">
                         <div class="results-grid" id="resultsGrid">
                             <!-- 通过 JS 动态生成结构 -->
@@ -434,13 +396,13 @@
                         <p>其中，<span>d</span> 即为超声波长 λ<sub>s</sub>，<span>k</span> 为衍射级次。由于衍射角 <span>θ</span> 极小，满足近似条件 sin<span>θ</span> ≈ tan<span>θ</span> = (Δ<span>x</span>/2) / <span>L</span>。代入上式得到：</p>
                         
                         <p class="no-indent">二、 线性化模型构建</p>
-                        <p>将近似条件代入并移项，构建光斑间距 Δ<span>x</span> 与光屏距离 <span>L</span> 的线性方程：</p>
+                        <p>将近似条件代入并移项，构建光斑间距 Δ<span>x</span> 与槽屏间距 <span>L</span> 的线性方程：</p>
                         <div class="formula">Δ<span>x</span> = ( 2<span>k</span>λ / λ<sub>s</sub> ) · <span>L</span> + <span>b</span></div>
                         <p>此式表明，二者应呈严格的线性关系。利用程序对实验数据进行最小二乘法拟合，求出斜率 <span>m</span> = 2<span>k</span>λ / λ<sub>s</sub>。</p>
 
                         <p class="no-indent">三、 声速反推计算</p>
-                        <p>根据拟合得到的斜率 <span>m</span>，求得超声波长 λ<sub>s</sub> = 2<span>k</span>λ / <span>m</span>。再结合信号源频率 <span>v</span>，最终求得液体声速：</p>
-                        <div class="formula"><span>u</span> = λ<sub>s</sub> · <span>v</span></div>
+                        <p>根据拟合得到的斜率 <span>m</span>，求得超声波长 λ<sub>s</sub> = 2<span>k</span>λ / <span>m</span>。再结合系统测得的平均频率 <span>v̄</span>，最终求得液体声速：</p>
+                        <div class="formula"><span>u</span> = λ<sub>s</sub> · <span>v̄</span></div>
                     </div>
                 </div>
             </div>
@@ -475,18 +437,11 @@
             isDragging = true;
             currentResizer = e.target;
             currentResizer.classList.add('active');
-            
             startX = e.clientX;
             startY = e.clientY;
-            
-            if (currentResizer === resizerLeft) {
-                startWidth = sidebarPanel.offsetWidth;
-            } else if (currentResizer === resizerMid) {
-                startHeight = chartPanel.offsetHeight;
-            } else if (currentResizer === resizerBottom) {
-                startWidth = resultsPanel.offsetWidth;
-            }
-
+            if (currentResizer === resizerLeft) startWidth = sidebarPanel.offsetWidth;
+            else if (currentResizer === resizerMid) startHeight = chartPanel.offsetHeight;
+            else if (currentResizer === resizerBottom) startWidth = resultsPanel.offsetWidth;
             document.body.classList.add('no-select');
             document.addEventListener('mousemove', onDrag);
             document.addEventListener('mouseup', stopDrag);
@@ -494,11 +449,10 @@
 
         function onDrag(e) {
             if (!isDragging) return;
-
             if (currentResizer === resizerLeft) {
                 const dx = e.clientX - startX;
                 let newWidth = startWidth + dx;
-                newWidth = Math.max(300, Math.min(600, newWidth));
+                newWidth = Math.max(340, Math.min(650, newWidth));
                 sidebarPanel.style.width = `${newWidth}px`;
             } else if (currentResizer === resizerMid) {
                 const dy = e.clientY - startY;
@@ -512,10 +466,7 @@
                 newWidth = Math.max(350, Math.min(newWidth, theoryPanel.offsetWidth + startWidth - 300));
                 resultsPanel.style.width = `${newWidth}px`;
             }
-            
-            if (chartInstance) {
-                chartInstance.resize();
-            }
+            if (chartInstance) chartInstance.resize();
         }
 
         function stopDrag() {
@@ -538,13 +489,13 @@
             const grid = document.getElementById('resultsGrid');
             let html = '';
             for (let i = 1; i <= 3; i++) {
+                // 删除截距 b 的 DOM 结构
                 html += `
                     <div class="result-box">
                         <h4>Δx${['₁','₂','₃'][i-1]} 处理组</h4>
                         <div class="result-item"><span>斜率 m:</span><span id="m${i}">-</span></div>
-                        <div class="result-item"><span>截距 b:</span><span id="b${i}">-</span></div>
                         <div class="result-item"><span>相关度 R²:</span><span id="r${i}">-</span></div>
-                        <div class="result-item" style="margin-top: 10px; border-top: 1px dashed #ccc; padding-top: 8px;">
+                        <div class="result-item" style="margin-top: 12px; border-top: 1px dashed #ccc; padding-top: 10px;">
                             <span>反推声速 u:</span><span id="u${i}" class="highlight-speed">-</span>
                         </div>
                     </div>
@@ -559,23 +510,25 @@
             for (let i = 0; i < 3; i++) { addRow(); }
         }
 
-        // 数据录入表格生成
         function addRow() {
             const tbody = document.querySelector('#dataTable tbody');
             const rowCount = tbody.rows.length + 1;
             const tr = document.createElement('tr');
-            // 修改：为 L 添加 step="0.1"，为 dx 添加 step="0.001"，并增加 placeholder 提示
+            
+            // 判断是否是第一行，只有第一行才提供 placeholder 示例
+            const isFirstRow = rowCount === 1;
+            
             tr.innerHTML = `
                 <td>${rowCount}</td>
-                <td><input type="number" step="0.1" class="input-L" placeholder="如 600.0"></td>
-                <td><input type="number" step="0.001" class="input-x1" placeholder="如 7.341"></td>
-                <td><input type="number" step="0.001" class="input-x2" placeholder="如 15.079"></td>
-                <td><input type="number" step="0.001" class="input-x3" placeholder="如 22.024"></td>
+                <td><input type="number" step="0.1" class="input-L" placeholder="${isFirstRow ? '600.0' : ''}"></td>
+                <td><input type="number" step="0.01" class="input-v" placeholder="${isFirstRow ? '11.13' : ''}"></td>
+                <td><input type="number" step="0.001" class="input-x1" placeholder="${isFirstRow ? '7.341' : ''}"></td>
+                <td><input type="number" step="0.001" class="input-x2" placeholder="${isFirstRow ? '15.079' : ''}"></td>
+                <td><input type="number" step="0.001" class="input-x3" placeholder="${isFirstRow ? '22.024' : ''}"></td>
                 <td><button class="btn btn-del" onclick="deleteRow(this)">×</button></td>
             `;
             tbody.appendChild(tr);
             
-            // 绑定事件（包含实时输入、失去焦点格式化）
             attachListenersToRow(tr);
             updateRowNumbers();
             updateChart();
@@ -583,19 +536,25 @@
 
         function attachListenersToRow(tr) {
             const inputL = tr.querySelector('.input-L');
+            const inputV = tr.querySelector('.input-v');
             const inputX1 = tr.querySelector('.input-x1');
             const inputX2 = tr.querySelector('.input-x2');
             const inputX3 = tr.querySelector('.input-x3');
 
-            // 1. 实时更新图表
-            [inputL, inputX1, inputX2, inputX3].forEach(input => {
+            [inputL, inputV, inputX1, inputX2, inputX3].forEach(input => {
                 input.addEventListener('input', updateChart);
             });
 
-            // 2. 失去焦点时，格式化小数位数
             inputL.addEventListener('blur', function() {
                 if (this.value !== '' && !isNaN(parseFloat(this.value))) {
-                    this.value = parseFloat(this.value).toFixed(1); // L保留1位
+                    this.value = parseFloat(this.value).toFixed(1); 
+                    updateChart();
+                }
+            });
+            
+            inputV.addEventListener('blur', function() {
+                if (this.value !== '' && !isNaN(parseFloat(this.value))) {
+                    this.value = parseFloat(this.value).toFixed(2); 
                     updateChart();
                 }
             });
@@ -603,7 +562,7 @@
             [inputX1, inputX2, inputX3].forEach(input => {
                 input.addEventListener('blur', function() {
                     if (this.value !== '' && !isNaN(parseFloat(this.value))) {
-                        this.value = parseFloat(this.value).toFixed(3); // dx保留3位
+                        this.value = parseFloat(this.value).toFixed(3); 
                         updateChart();
                     }
                 });
@@ -645,7 +604,25 @@
 
         function updateResultPanel() {
             const lambda = parseFloat(document.getElementById('lambdaInput').value) * 1e-6;
-            const freq = parseFloat(document.getElementById('freqInput').value);
+            
+            let sumFreq = 0;
+            let freqCount = 0;
+            document.querySelectorAll('#dataTable tbody .input-v').forEach(input => {
+                const v = parseFloat(input.value);
+                if (!isNaN(v)) {
+                    sumFreq += v;
+                    freqCount++;
+                }
+            });
+            
+            const avgFreq = freqCount > 0 ? (sumFreq / freqCount) : NaN;
+            
+            const freqDisplayEl = document.getElementById('avgFreqDisplay');
+            if (!isNaN(avgFreq)) {
+                freqDisplayEl.innerText = avgFreq.toFixed(2);
+            } else {
+                freqDisplayEl.innerText = '-';
+            }
 
             for (let k = 1; k <= 3; k++) {
                 const xData = [], yData = [];
@@ -661,19 +638,18 @@
                 const res = linearRegression(xData, yData);
                 if (res) {
                     document.getElementById(`m${k}`).innerText = res.m.toFixed(5);
-                    document.getElementById(`b${k}`).innerText = res.b.toFixed(3);
                     document.getElementById(`r${k}`).innerText = res.rSquared.toFixed(4);
                     
                     const lambda_s = (2 * k * lambda) / res.m; 
-                    if (!isNaN(freq) && freq > 0 && res.m !== 0) {
-                        const u = lambda_s * freq * 1000; 
+                    
+                    if (!isNaN(avgFreq) && avgFreq > 0 && res.m !== 0) {
+                        const u = lambda_s * avgFreq * 1000; 
                         document.getElementById(`u${k}`).innerText = u.toFixed(1);
                     } else {
                         document.getElementById(`u${k}`).innerText = "-";
                     }
                 } else {
                     document.getElementById(`m${k}`).innerText = "-";
-                    document.getElementById(`b${k}`).innerText = "-";
                     document.getElementById(`r${k}`).innerText = "-";
                     document.getElementById(`u${k}`).innerText = "-";
                 }
@@ -775,7 +751,7 @@
                     },
                     scales: {
                         x: {
-                            title: { display: true, text: '光屏距离 L (mm)', color: textColor, font: { ...chartFont, size: 15, weight: 'bold' } },
+                            title: { display: true, text: '槽屏间距L (mm)', color: textColor, font: { ...chartFont, size: 15, weight: 'bold' } },
                             grid: { color: lineColor }, border: { color: gridColor },
                             ticks: { color: textColor, font: chartFont },
                             min: document.getElementById('xMin').value !== "" ? parseFloat(document.getElementById('xMin').value) : undefined,
@@ -795,6 +771,7 @@
             updateResultPanel();
         }
 
+        // 监听所有设置项
         document.querySelectorAll('.sidebar input, .sidebar select').forEach(el => {
             el.addEventListener('input', updateChart);
             el.addEventListener('change', updateChart);
